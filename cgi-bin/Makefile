@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -O3 -fPIC -shared -I ..
+LDLIBS=-pthread
 
 all: adder minus mul fib
 

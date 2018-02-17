@@ -1,11 +1,11 @@
 CC = gcc
 FLAGS =-g -O3 -w -rdynamic -I . -ldl
-LDLIBS=-lpthread
+LDLIBS=-pthread
 
 all: dl cgi
 
 dl: dl.c csapp.o cache.o
-	$(CC) $(FLAGS) -o dl dl.c csapp.o cache.o
+	$(CC) $(LDLIBS) $(FLAGS) -o dl dl.c csapp.o cache.o -ldl
 
 cgi:
 	(cd cgi-bin; make)
