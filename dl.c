@@ -264,11 +264,15 @@ void clienterror(int fd, char *cause, char *errnum,
 void serve(client_info *client) {
     // Get some extra info about the client (hostname/port)
     // This is optional, but it's nice to know who's connected
-    Getnameinfo((SA *) &client->addr, client->addrlen,
+    int rc = getnameinfo((SA *) &client->addr, client->addrlen,
             client->host, sizeof(client->host),
             client->serv, sizeof(client->serv),
             0);
 
+    // handle getnameinfo error
+    if (rc != 0) {
+        return;
+    }
     // printf("Accepted connection from %s:%s\n", client->host, client->serv);
 
     rio_t rio;
