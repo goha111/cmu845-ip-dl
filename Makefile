@@ -2,18 +2,18 @@ CC = gcc
 FLAGS =-g -O2 -w -rdynamic -I . -ldl
 LDLIBS=-lpthread
 
-all: dl dll
+all: dl cgi
 
 dl: dl.c csapp.o
 	$(CC) $(FLAGS) -o dl dl.c csapp.o
 
-dll:
-	(cd dll; make)
+cgi:
+	(cd cgi-bin; make)
 
 
 csapp.o:
-	$(CC) $(BASEFLAGS) -c csapp.c
+	$(CC) $(FLAGS) -c csapp.c
 
 clean:
-	rm -f *.o base dl *.so *~
-	(cd dll; make clean)
+	rm -f *.o dl *.so *~
+	(cd cgi-bin; make clean)

@@ -29,6 +29,8 @@ typedef enum {
     PARSE_DYNAMIC
 } parse_result;
 
+typedef void (*FUNC)(int, char *);
+
 /*
  * read_requesthdrs - read HTTP request headers
  * Returns true if an error occurred, or false otherwise.
@@ -75,7 +77,7 @@ parse_result parse_uri(char *uri, char *filename, char *cgiargs) {
         }
 
         /* Format the filename */
-        if (snprintf(filename, MAXLINE, ".%s", uri) >= MAXLINE) {
+        if (snprintf(filename, MAXLINE, "%s", uri+9) >= MAXLINE) {
             return PARSE_ERROR; // Overflow!
         }
 
@@ -174,9 +176,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs) {
     buflen = snprintf(buf, MAXLINE,
             "HTTP/1.0 200 OK\r\n" \
             "Server: Tiny Web Server\r\n");
-    if (buflen >= MAXLINE) {
-        return; // Overflow!
-    }
+
 
     /* Write first part of HTTP response */
     if (rio_writen(fd, buf, buflen) < 0) {
@@ -187,20 +187,19 @@ void serve_dynamic(int fd, char *filename, char *cgiargs) {
     fprintf(stdout, "filename: %s\n", filename);
     fprintf(stdout, "args: %s\n", cgiargs);
 
-    void *handle = dlopen("./adder.so", RTLD_LAZY);
+    snprintf(buf, MAXLINE, "./cgi-bin/%s.so", filename);
+    void *handle = dlopen(buf, RTLD_LAZY);
     if (!handle) {
+        fprintf(stderr, "[error] Cannot load the file: %s.so\n", filename);
+        snprintf(buf, MAXLINE, dlerror());
+        rio_writen(fd, buf, strlen(buf));
         return;
     }
-    dlerror();
-    typedef int (*CAC_FUNC)(int, int);
-    CAC_FUNC cac_func = NULL;
-    *(void **) (&cac_func) = dlsym(handle, "add");
-    char *error;
-    if ((error = dlerror()) != NULL)  {
-        fprintf(stderr, "%s\n", error);
-        return;
+    fprintf(stdout, "Successfully load the file: %s.so\n", filename);
+    FUNC function = NULL;
+    if ((function = dlsym(handle, filename)) != NULL) {
+        function(fd, cgiargs);
     }
-    fprintf(stdout, "add: %d\n", (*cac_func)(2,7));
     dlclose(handle);
 }
 
@@ -310,15 +309,14 @@ void serve(client_info *client) {
         return;
     }
 
-    /* Attempt to stat the file */
-    struct stat sbuf;
-    if (stat(filename, &sbuf) < 0) {
-        clienterror(client->connfd, filename, "404", "Not found",
-                "Tiny couldn't find this file");
-        return;
-    }
-
     if (result == PARSE_STATIC) { /* Serve static content */
+        /* Attempt to stat the file */
+        struct stat sbuf;
+        if (stat(filename, &sbuf) < 0) {
+            clienterror(client->connfd, filename, "404", "Not found",
+                        "Tiny couldn't find this file");
+            return;
+        }
         if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode)) {
             clienterror(client->connfd, filename, "403", "Forbidden",
                     "Tiny couldn't read the file");
@@ -326,11 +324,6 @@ void serve(client_info *client) {
         }
         serve_static(client->connfd, filename, sbuf.st_size);
     } else { /* Serve dynamic content */
-//        if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
-//            clienterror(client->connfd, filename, "403", "Forbidden",
-//                    "Tiny couldn't run the CGI program");
-//            return;
-//        }
         serve_dynamic(client->connfd, filename, cgiargs);
     }
 }
@@ -396,8 +389,6 @@ int main(int argc, char **argv) {
         /* Connection is established; serve client */
         pthread_t thread;
         pthread_create(&thread, NULL, run, client);
-//        serve(client);
-//        Close(client->connfd);
     }
 }
 
