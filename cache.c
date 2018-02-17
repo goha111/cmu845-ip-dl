@@ -38,6 +38,7 @@ block_t *block_init(char *name, void *handle) {
 }
 
 void block_destroy(block_t *block) {
+    fprintf(stdout, "Destroy the block: %s\n", block->name);
     free(block->name);
     dlclose(block->handle);
     free(block);
@@ -65,6 +66,7 @@ void *put(char *name, void *handle) {
     pthread_rwlock_wrlock(&mutex);
     if (cache_size == CACHE_CAP) {
         block_t *temp = block_remove(tail->prev);
+        fprintf(stdout, "Cache evict for block: %s\n", temp->name);
         block_destroy(temp);
         cache_size -= 1;
     }

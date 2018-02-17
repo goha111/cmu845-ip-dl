@@ -1,4 +1,4 @@
-#define CACHE_CAP 1
+#define CACHE_CAP 30
 
 typedef struct block {
     struct block *prev;

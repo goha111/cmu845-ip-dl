@@ -44,7 +44,7 @@ bool read_requesthdrs(rio_t *rp) {
             return true;
         }
 
-        printf("%s", buf);
+        // printf("%s", buf);
     } while(strncmp(buf, "\r\n", sizeof("\r\n")));
 
     return false;
@@ -121,7 +121,6 @@ void get_filetype(char *filename, char *filetype) {
         strcpy(filetype, "text/plain");
     }
 }
-
 
 /*
  * serve_static - copy a file back to the client
@@ -205,6 +204,8 @@ void serve_dynamic(int fd, char *filename, char *cgiargs) {
         func = put(filename, handle);
         fprintf(stdout, "Added %s to cache\n", buf);
 
+    } else {
+        fprintf(stdout, "cache hit for %s!\n", buf);
     }
     func(fd, cgiargs);
 }
@@ -267,7 +268,8 @@ void serve(client_info *client) {
             client->host, sizeof(client->host),
             client->serv, sizeof(client->serv),
             0);
-    printf("Accepted connection from %s:%s\n", client->host, client->serv);
+
+    // printf("Accepted connection from %s:%s\n", client->host, client->serv);
 
     rio_t rio;
     rio_readinitb(&rio, client->connfd);
@@ -278,7 +280,7 @@ void serve(client_info *client) {
         return;
     }
 
-    printf("%s", buf);
+    // printf("%s", buf);
 
     /* Parse the request line and check if it's well-formed */
     char method[MAXLINE];

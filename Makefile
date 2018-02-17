@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS =-g -O2 -w -rdynamic -I . -ldl
+FLAGS =-g -O3 -w -rdynamic -I . -ldl
 LDLIBS=-lpthread
 
 all: dl cgi
