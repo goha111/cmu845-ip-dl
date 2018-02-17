@@ -374,6 +374,7 @@ int main(int argc, char **argv) {
 
     // init cache
     cache_init();
+
     while (1) {
         // Allocate space on the heap for client info
         client_info *client = malloc(sizeof(*client));

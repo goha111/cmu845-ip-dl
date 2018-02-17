@@ -9,10 +9,15 @@
 
 void cache_init() {
     cache_size = 0;
+
+    pthread_rwlock_init(&mutex, NULL);
+
     head = Malloc(sizeof(block_t));
     tail = Malloc(sizeof(block_t));
+
     head->next = NULL;
     head->next = tail;
+
     tail->prev = head;
     tail->next = NULL;
 }

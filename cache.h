@@ -10,7 +10,7 @@ typedef struct block {
 
 
 static size_t cache_size;
-static pthread_rwlock_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_rwlock_t mutex;
 static block_t *head;
 static block_t *tail;
 
