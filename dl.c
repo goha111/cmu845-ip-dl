@@ -7,6 +7,7 @@
  * Fixed some style issues, stop using csapp functions where not appropriate
  */
 #include "csapp.h"
+#include "cache.h"
 #include <stdbool.h>
 #include <dlfcn.h>
 
@@ -184,23 +185,28 @@ void serve_dynamic(int fd, char *filename, char *cgiargs) {
         return;
     }
 
-    fprintf(stdout, "filename: %s\n", filename);
-    fprintf(stdout, "args: %s\n", cgiargs);
-
+    // generate filename
     snprintf(buf, MAXLINE, "./cgi-bin/%s.so", filename);
-    void *handle = dlopen(buf, RTLD_LAZY);
-    if (!handle) {
-        fprintf(stderr, "[error] Cannot load the file: %s.so\n", filename);
-        snprintf(buf, MAXLINE, dlerror());
-        rio_writen(fd, buf, strlen(buf));
-        return;
+
+    FUNC func = get(filename);
+
+    // cache miss!
+    if (!func) {
+        void *handle = dlopen(buf, RTLD_LAZY);
+        if (!handle) {
+            fprintf(stderr, "[error] Cannot load the file: %s.so\n", filename);
+            snprintf(buf, MAXLINE, dlerror());
+            rio_writen(fd, buf, strlen(buf));
+            return;
+        }
+        fprintf(stdout, "Successfully load the file: %s.so\n", filename);
+
+        // add to cache
+        func = put(filename, handle);
+        fprintf(stdout, "Added %s to cache\n", buf);
+
     }
-    fprintf(stdout, "Successfully load the file: %s.so\n", filename);
-    FUNC function = NULL;
-    if ((function = dlsym(handle, filename)) != NULL) {
-        function(fd, cgiargs);
-    }
-    dlclose(handle);
+    func(fd, cgiargs);
 }
 
 /*
@@ -364,6 +370,8 @@ int main(int argc, char **argv) {
     // ignore SIGPIPE error
     Signal(SIGPIPE, SIG_IGN);
 
+    // init cache
+    cache_init();
     while (1) {
         // Allocate space on the heap for client info
         client_info *client = malloc(sizeof(*client));
