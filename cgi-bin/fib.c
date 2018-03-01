@@ -28,11 +28,11 @@ void fib(int fd, char *args) {
 
 
     /* Make the response body */
-    snprintf(content, MAXLINE, "Welcome to add.com: ");
-    snprintf(content, MAXLINE, "%sTHE Internet addition portal.\r\n<p>", content);
-    snprintf(content, MAXLINE, "%sThe %d fibonacci number is: %d\r\n<p>",
-             content, n, ans);
-    snprintf(content, MAXLINE, "%sThanks for visiting!\r\n", content);
+    snprintf(content, MAXLINE,
+             "Welcome, this is Fibonacci portal.\r\n"
+             "<p>The %d fibonacci number is: %d\r\n"
+             "<p>Thanks for visiting!\r\n",
+             n, ans);
     size_t len = strlen(content);
 
     // Make response header

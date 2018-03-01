@@ -18,11 +18,11 @@ void minus(int fd, char *args) {
     n2 = atoi(arg2);
 
     /* Make the response body */
-    snprintf(content, MAXLINE, "Welcome to add.com: ");
-    snprintf(content, MAXLINE, "%sTHE Internet addition portal.\r\n<p>", content);
-    snprintf(content, MAXLINE, "%sThe answer is: %d - %d = %d\r\n<p>",
-             content, n1, n2, n1 - n2);
-    snprintf(content, MAXLINE, "%sThanks for visiting!\r\n", content);
+    snprintf(content, MAXLINE,
+             "Welcome, this is Minus portal.\r\n"
+             "<p>The answer is: %d - %d = %d\r\n"
+             "<p>Thanks for visiting!\r\n",
+             n1, n2, n1-n2);
     size_t len = strlen(content);
 
     // Make response header
