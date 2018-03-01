@@ -82,7 +82,6 @@ void *put(char *name, void *handle) {
     return node->func;
 }
 
-
 block_t *block_remove(block_t *block) {
     block->prev->next = block->next;
     block->next->prev = block->prev;
